@@ -17,11 +17,12 @@ class MoviesController < ApplicationController
     @sort             = ""
     redirect          = false
 
+
     
-    if(params[:ratings])#берём рейтинги из get
-      params[:ratings].each {|key, value| @selected_ratings << key}#string wits selected ratings
+    if(params[:ratings])
+      params[:ratings].each {|key, value| @selected_ratings << key}
       session[:ratings] = @selected_ratings
-    elsif session[:ratings]#если есть в сессии
+    elsif session[:ratings]
         @selected_ratings = session[:ratings]
         redirect = true
       else
@@ -37,6 +38,7 @@ class MoviesController < ApplicationController
     else
       @sort = nil
     end
+    
     #style
       if @sort == 'title'
         @css_title = 'hilite'
@@ -46,7 +48,7 @@ class MoviesController < ApplicationController
     #
     
      if redirect
-      flash.keep
+
       redirect_to movies_path :ratings=>@selected_ratings, :sort=>@sort
     else
       @movies = Movie.where(:rating => @selected_ratings).order(@sort)
