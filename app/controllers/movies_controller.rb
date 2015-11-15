@@ -12,21 +12,64 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.uniq.pluck(:rating)#ratings arr
+    #ratings
     @selected_ratings = []
-    if params[:ratings]#if filter by rating
+    @sort             = ""
+    redirect          = false
+
+    
+    if(params[:ratings])#берём рейтинги из get
       params[:ratings].each {|key, value| @selected_ratings << key}#string wits selected ratings
-      @movies = Movie.where(["rating IN (?)", @selected_ratings])#select with ratings
-    elsif params[:sort]
-      @movies = Movie.order(params[:sort])#else if sorting by title or date
-      if params[:sort] == 'title'
+      session[:ratings] = @selected_ratings
+    elsif session[:ratings]#если есть в сессии
+        @selected_ratings = session[:ratings]
+        redirect = true
+      else
+        @selected_ratings = nil
+    end
+
+    if params[:sort]
+      @sort = params[:sort]
+      session[:sort] = @sort
+    elsif session[:sort]
+      @sort = session[:sort]
+      redirect = true
+    else
+      @sort = nil
+    end
+    #style
+      if @sort == 'title'
         @css_title = 'hilite'
-      elsif params[:sort] == 'release_date'
+      elsif @sort == 'release_date'
+        @css_release_date = 'hilite'
+      end
+    #
+    
+     if redirect
+      flash.keep
+      redirect_to movies_path :ratings=>@selected_ratings, :sort=>@sort
+    else
+      @movies = Movie.where(:rating => @selected_ratings).order(@sort)
+    end
+
+=begin
+    if @selected_ratings && @sort
+      @movies = Movie.where(:rating => @selected_ratings).order(@sort).all
+    elsif @selected_ratings
+      @movies = Movie.where(["rating IN (?)", @selected_ratings])#select with ratings
+      
+    elsif @sort
+      @movies = Movie.order(@sort)#else if sorting by title or date
+      if @sort == 'title'
+        @css_title = 'hilite'
+      elsif @sort == 'release_date'
         @css_release_date = 'hilite'
       end
     else
       @movies = Movie.all#else get all
       @selected_ratings = Movie.uniq.pluck(:rating)
     end
+=end
     
   end
 
